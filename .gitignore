@@ -169,6 +169,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
 .vs/CSharpPython3Connector/CopilotIndices/17.12.38.29086/CodeChunks.db
 .vs/CSharpPython3Connector/CopilotIndices/17.12.38.29086/SemanticSymbols.db
 .vs/CSharpPython3Connector/CopilotIndices/17.12.38.29086/SemanticSymbols.db-shm
@@ -183,3 +185,8 @@ cython_debug/
 .vs/CSharpPython3Connector/v17/DocumentLayout.json
 MyMainCSharpApp/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
 MyMainCSharpApp/obj/Debug/MyMainCSharpApp.csproj.AssemblyReference.cache
+/MyMainCSharpApp/bin/Debug
+/.io
+/.logs
+/.vs/CSharpPython3Connector
+/MyMainCSharpApp/obj/Debug

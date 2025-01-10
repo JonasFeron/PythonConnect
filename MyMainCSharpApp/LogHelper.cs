@@ -9,11 +9,11 @@ using log4net.Appender;
 using log4net.Layout;
 using System.IO;
 
-namespace Muscle
+namespace MyMainCSharpApp
 {
     public class LogHelper
     {
-        public static void Setup(string level)
+        public static void Setup(string level, string solutionDirectory)
         {
             Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
 
@@ -23,7 +23,7 @@ namespace Muscle
 
             RollingFileAppender roller = new RollingFileAppender();
             roller.AppendToFile = true;
-            roller.File = Path.Combine(AccessToAll.Main_Folder, @"Logs\LogFile.txt");
+            roller.File = Path.Combine(solutionDirectory, @".logs\LogFile.txt");
             roller.Layout = patternLayout;
             roller.MaxSizeRollBackups = 3;
             roller.MaximumFileSize = "5MB";
@@ -65,7 +65,6 @@ namespace Muscle
         public static log4net.ILog GetLogger(System.Type fileName)
         {
             var log = log4net.LogManager.GetLogger(fileName);
-            //log4net.Config.XmlConfigurator.Configure();
             return log;
         }
     }

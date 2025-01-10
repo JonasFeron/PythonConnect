@@ -5,8 +5,6 @@ VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyMainCSharpApp", "MyMainCSharpApp\MyMainCSharpApp.csproj", "{126B5A70-FF1D-4BAF-B296-92D29B16D62F}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "MyPythonScripts", "MyPythonScripts\MyPythonScripts.pyproj", "{8847B93E-8A47-4BFD-A08E-8431591B163F}"
-EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "MyPythonProject", "MyPythonProject\MyPythonProject.pyproj", "{4F2A57A3-C20E-4C67-B3E3-374FE7A7B04B}"
 EndProject
 Global
@@ -19,8 +17,6 @@ Global
 		{126B5A70-FF1D-4BAF-B296-92D29B16D62F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{126B5A70-FF1D-4BAF-B296-92D29B16D62F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{126B5A70-FF1D-4BAF-B296-92D29B16D62F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8847B93E-8A47-4BFD-A08E-8431591B163F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8847B93E-8A47-4BFD-A08E-8431591B163F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F2A57A3-C20E-4C67-B3E3-374FE7A7B04B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4F2A57A3-C20E-4C67-B3E3-374FE7A7B04B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
