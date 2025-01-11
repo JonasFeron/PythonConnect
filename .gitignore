@@ -189,3 +189,4 @@ cython_debug/
 /Source/PythonConnect/.vs
 /Source/PythonConnect.TestConsole/bin/Release
 /Source/PythonConnect.TestConsole/obj/Release
+/Source/PythonConnect/.private
