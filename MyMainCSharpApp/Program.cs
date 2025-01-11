@@ -61,7 +61,7 @@ namespace MyMainCSharpApp
             {
                 stopWatch.Stop();
                 Console.WriteLine($"A new python thread has been initialized in: {stopWatch.Elapsed}");
-                Console.WriteLine($"\nOne advantage of using CSharpPython3Connector is: the python Thread is initialized only once!");
+                Console.WriteLine($"\nOne advantage of using PythonConnect is: the python Thread is initialized only once!");
                 Console.WriteLine($"Initializing a python Thread is very time consuming! it took: {stopWatch.Elapsed}");
 
                 Console.WriteLine($"\nMultiple python commands can then be executed without reinitializing python everytime, which saves a lot of time:");

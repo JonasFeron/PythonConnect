@@ -191,3 +191,8 @@ MyMainCSharpApp/obj/Debug/MyMainCSharpApp.csproj.AssemblyReference.cache
 /.vs/CSharpPython3Connector
 /MyMainCSharpApp/obj/Debug
 /.vs
+MyMainCSharpApp/nuget.exe
+MyMainCSharpApp/MyMainCSharpApp.nuspec
+/MyMainCSharpApp/.vs
+/MyMainCSharpApp/bin/Release
+/MyMainCSharpApp/obj/Release

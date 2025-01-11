@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
 [assembly: AssemblyTitle("PythonConnect")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("PythonConnect allows you to access the full power of Python 3 (latest version) directly from any C# application. Sending data from C# to Python 3 and retrieving results back in C# has never been easier. PythonConnect is an alternative to Python.NET and IronPython.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MyMainCSharpApp")]
-[assembly: AssemblyCopyright("Copyright ©  2021")]
+[assembly: AssemblyCompany("Université catholique de Louvain (UCLouvain), Belgique")]
+[assembly: AssemblyProduct("PythonConnect")]
+[assembly: AssemblyCopyright("Copyright © UCLouvain  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
