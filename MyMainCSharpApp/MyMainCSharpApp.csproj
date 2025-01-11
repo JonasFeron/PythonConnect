@@ -66,9 +66,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LogHelper.cs" />
-    <Compile Include="PythonConnector\PythonManager.cs" />
-    <Compile Include="PythonConnector\PythonCommand.cs" />
-    <Compile Include="PythonConnector\PythonResult.cs" />
+    <Compile Include="PythonConnect\PythonManager.cs" />
+    <Compile Include="PythonConnect\PythonCommand.cs" />
+    <Compile Include="PythonConnect\PythonResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
