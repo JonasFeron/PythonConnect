@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace MyMainCSharpApp
+namespace PythonConnect
 {
     /// <summary>
     /// Represents a command to execute a Python script with specified data and result file paths.

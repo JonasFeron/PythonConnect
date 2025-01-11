@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace MyMainCSharpApp
+namespace PythonConnect
 {
     public class PythonManager : IDisposable
     {
@@ -300,6 +300,10 @@ namespace MyMainCSharpApp
             }
             else return null;
         }
+
+        #endregion
+
+        #region Public Methods
 
 
         /// <summary>

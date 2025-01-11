@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyMainCSharpApp
+namespace PythonConnect
 {
     /// <summary>
     /// Represents the result of a Python script execution.

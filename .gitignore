@@ -196,3 +196,13 @@ MyMainCSharpApp/MyMainCSharpApp.nuspec
 /MyMainCSharpApp/.vs
 /MyMainCSharpApp/bin/Release
 /MyMainCSharpApp/obj/Release
+/Source/.io
+/Source/.vs/PythonConnect
+/Source/.logs
+/Source/PythonConnect/bin/Debug
+/Source/PythonConnect/obj/Debug
+/Source/PythonConnect/nuget.exe
+/Source/PythonConnect/PythonConnect.nuspec
+/Source/PythonConnect.TestConsole/.vs
+/Source/PythonConnect.TestConsole/bin/Debug
+/Source/PythonConnect.TestConsole/obj/Debug

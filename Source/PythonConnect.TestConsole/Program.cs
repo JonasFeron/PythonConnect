@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using PythonConnect;
 
-namespace MyMainCSharpApp
+namespace PythonConnect.TestConsole
 {
     internal class Program
     {
@@ -17,9 +18,9 @@ namespace MyMainCSharpApp
 
             string pathToActivateConda = @"C:\Users\Jonas\anaconda3\Scripts\activate.bat"; // OverWrite your path to the activate.bat file of your anaconda environment
             
-            string CSharpAppDirectory = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent.FullName;// new DirectoryInfo(Directory.GetCurrentDirectory()) return @"...\CSharpPython3Connector\MyMainCSharpApp\bin\Debug" where MyMainCSharpApp.exe is located. 
-            string solutionDirectory  = Directory.GetParent(CSharpAppDirectory).FullName;
-            string pythonProjectDirectory = Path.Combine(solutionDirectory, "MyPythonProject");
+            string CSharpAppDirectory = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent.FullName;// new DirectoryInfo(Directory.GetCurrentDirectory()) return @"...\PythonConnect.TestConsole\bin\Debug" where PythonConnect.TestConsole.exe is located. 
+            string solutionDirectory  = Directory.GetParent(CSharpAppDirectory).FullName; // return @"...\PythonConnect.TestConsole"
+            string pythonProjectDirectory = Path.Combine(solutionDirectory, "PythonConnect.TestPythonProject");
 
 
             // Set up the logger with a desired level
