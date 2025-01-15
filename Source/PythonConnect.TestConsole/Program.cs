@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
 using PythonConnect;
+using log4net.Core;
 
 namespace PythonConnect.TestConsole
 {
@@ -21,10 +22,10 @@ namespace PythonConnect.TestConsole
             string CSharpAppDirectory = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent.FullName;// new DirectoryInfo(Directory.GetCurrentDirectory()) return @"...\PythonConnect.TestConsole\bin\Debug" where PythonConnect.TestConsole.exe is located. 
             string solutionDirectory  = Directory.GetParent(CSharpAppDirectory).FullName; // return @"...\PythonConnect.TestConsole"
             string pythonProjectDirectory = Path.Combine(solutionDirectory, "PythonConnect.TestPythonProject");
-
-
+            
             // Set up the logger with a desired level
-            LogHelper.Setup("Debug",solutionDirectory);
+            string loglevel = Level.Info.DisplayName; // Set the desired log level. Options are: Debug, Info, Warn, Error, Fatal, Off
+            LogHelper.Setup(loglevel, solutionDirectory);
 
             // Get a logger instance to write log messages
             var log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

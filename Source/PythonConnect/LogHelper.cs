@@ -8,6 +8,7 @@ using log4net.Core;
 using log4net.Appender;
 using log4net.Layout;
 using System.IO;
+using System.Net.NetworkInformation;
 
 namespace PythonConnect
 {
@@ -39,22 +40,22 @@ namespace PythonConnect
             Level lvl = Level.All;
             switch (level)
             {
-                case "Debug":
+                case string s when s == Level.Debug.DisplayName:
                     lvl = Level.Debug;
                     break;
-                case "Info":
+                case string s when s == Level.Info.DisplayName:
                     lvl = Level.Info;
                     break;
-                case "Warn":
+                case string s when s == Level.Warn.DisplayName:
                     lvl = Level.Warn;
                     break;
-                case "Error":
+                case string s when s == Level.Error.DisplayName:
                     lvl = Level.Error;
                     break;
-                case "Fatal":
+                case string s when s == Level.Fatal.DisplayName:
                     lvl = Level.Fatal;
                     break;
-                case "Off":
+                case string s when s == Level.Off.DisplayName:
                     lvl = Level.Off;
                     break;
             }
