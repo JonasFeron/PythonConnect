@@ -170,23 +170,65 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# Visual Studio
+/.vs
+.vs/
+.vscode/
+
+# Build Folders
+bin/
+obj/
+Debug/
+Release/
+
+# User-Specific Files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Auto-generated files
+*.sln.ide
+*.log
+
+# Package Management
+/packages/NuGet/.private
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.builds
+*.generated.cs
+
+# Windows-specific files
+Thumbs.db
+desktop.ini
+
+# Other
+*.cache
+*.temp
+*.pidb
+*.svclog
+*.pdb
+*.mdb
+
+
+# Temporary Files
+*.tmp
+~$*
 
 
 # Specific to this solution
-/Source/.io
-/Source/.vs/PythonConnect
-/Source/.logs
-/Source/PythonConnect/bin/Debug
-/Source/PythonConnect/obj/Debug
-/Source/PythonConnect/nuget.exe
-/Source/PythonConnect/PythonConnect.nuspec
-/Source/PythonConnect.TestConsole/.vs
-/Source/PythonConnect.TestConsole/bin/Debug
-/Source/PythonConnect.TestConsole/obj/Debug
-/.vs/PythonConnect
-/Source/PythonConnect/bin/Release
-/Source/PythonConnect/obj/Release
-/Source/PythonConnect/.vs
-/Source/PythonConnect.TestConsole/bin/Release
-/Source/PythonConnect.TestConsole/obj/Release
-/Source/PythonConnect/.private
+
+/src/PythonConnect/.vs
+/src/PythonConnect/bin
+/src/PythonConnect/obj
+
+/examples/TestProject/.temp
+/examples/TestProject/CSharp/.vs
+/examples/TestProject/CSharp/bin
+/examples/TestProject/CSharp/obj
+
+
+
