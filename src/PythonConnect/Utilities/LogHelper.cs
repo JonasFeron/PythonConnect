@@ -9,6 +9,7 @@ using log4net.Appender;
 using log4net.Layout;
 using System.IO;
 using System.Net.NetworkInformation;
+using System.Threading;
 
 namespace PythonConnect
 {
@@ -19,7 +20,11 @@ namespace PythonConnect
             Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
 
             PatternLayout patternLayout = new PatternLayout();
-            patternLayout.ConversionPattern = "%date{ABSOLUTE} [%logger] -%thread-  %level - %message%newline%exception";
+            //patternLayout.ConversionPattern = "%date{ABSOLUTE} [%logger] -%thread-  %level - %message%newline%exception"; //old version
+            patternLayout.ConversionPattern = "%12.12date{ABSOLUTE} -%2.2thread -%5.5level- %15.15logger.%20.20M(): %message %newline";
+
+            
+
             patternLayout.ActivateOptions();
 
             RollingFileAppender roller = new RollingFileAppender();

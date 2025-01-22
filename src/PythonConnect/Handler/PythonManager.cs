@@ -15,7 +15,7 @@ namespace PythonConnect
         private static int _timeout = 20000; //set the timeout to 20 seconds, after that the program will stop waiting for a signal and close. 
         private static string _condaPath; // set the path to the activate.bat file in your Anaconda Environnement for instance: ActivateCondaBat = @"C:\Users\Me\anaconda3\Scripts\activate.bat";
         private static string _pythonProjectDirectory; // Path to the python project that contains the python scripts to be executed.
-
+        private static string _condaEnvironmentName = "base"; // Name of the Anaconda environment to activate
 
 
         private static readonly log4net.ILog log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType); // Log object to log messages
@@ -23,12 +23,12 @@ namespace PythonConnect
         private static PythonManager _instance; // Singleton instance of the PythonManager
         private static readonly object Locker = new object(); // Lock object to ensure thread safety
 
-        private static bool successInitialized; // Boolean to check if the Python process has been initialized successfully
-        private const string AnacondaActivatedFeedback = "AnacondaActivatedFeedback"; 
-
         private readonly List<PythonCommand> _commands = new List<PythonCommand>(); // List of commands to execute
 
         private readonly List<PythonResult> _results = new List<PythonResult>(); // List of results
+
+        private static readonly List<string> _errorMessages = new List<string>(); // error messages received from the python process
+
 
         private bool _stop;
 
@@ -42,10 +42,16 @@ namespace PythonConnect
 
 
         private readonly ManualResetEvent _signal_executedCommand_fromPythonThread = new ManualResetEvent(false);
-        private readonly ManualResetEvent _signal_returnTheResults = new ManualResetEvent(false);
+        private readonly ManualResetEvent _signal_resultsReady = new ManualResetEvent(false);
 
-        // Signal when the process "Command Prompt" has been initialized as an Anaconda environnement able to execute python scripts
-        private readonly AutoResetEvent _signal_initializedPythonThread = new AutoResetEvent(false);
+
+        // Signal when the activation of the Anaconda environment has finished. Activation can be successful or not.
+        private readonly AutoResetEvent _signal_pythonThreadActivation = new AutoResetEvent(false);
+        private static bool successfulPythonActivation; // Boolean to check if the Python process has been activated successfully
+        private const string feedback_success_pythonActivation = "feedback_success_pythonActivation";
+        private const string feedback_fail_condaBaseEnv = "feedback_fail_condaBaseEnv";
+        private const string feedback_fail_condaOtherEnv = "feedback_fail_condaOtherEnv";
+
 
         // Signal to stop the python thread
         private readonly AutoResetEvent _signal_stopPythonThread = new AutoResetEvent(false);
@@ -58,10 +64,23 @@ namespace PythonConnect
         /// </summary>
         private PythonManager()
         {
-            log.Debug("Initializing PythonManager...");
+            log.Info("Try to create a PythonManager");
+            log.Debug("Then will try to launch a new Command Prompt Process in a parallel thread");
+            log.Debug("Then will try to turn this Command Prompt into a python environment using Anaconda");
+            log.Debug("Then will wait for python commands to execute");
+
             ThreadPool.QueueUserWorkItem(ManagePythonThread); // Start a new thread to initialize the Python process
-            successInitialized = _signal_initializedPythonThread.WaitOne(_timeout); // Wait for the initialization signal
-            log.Debug($"PythonManager initialized: {successInitialized}");
+
+            log.Debug("Wait signal - End of Python Activation -");
+            bool feedbackReceived = _signal_pythonThreadActivation.WaitOne(_timeout);
+
+            if (!feedbackReceived)
+            {
+                log.Warn($"Did not receive activation feedback within {_timeout} ms.");
+                successfulPythonActivation = false;
+            }
+            else log.Debug("Received signal - End of Python Activation -");
+            log.Info("Python activated successfully ?: " + successfulPythonActivation);
         }
 
         #endregion
@@ -81,25 +100,31 @@ namespace PythonConnect
         {
             get
             {
+                log.Debug($"get Instance called: try to return a singleton instance");
+
                 if (_instance == null)
                 {
                     lock (Locker)
                     {
+                        log.Debug($"LOCK Instance");
                         if (_instance != null)
                         {
-                            // If _instance has been implemented in the meantime
+                            log.Debug($"_instance is not null: it has been created in the meantime");
                             return _instance;
                         }
+                        log.Debug($"_instance is null: call PythonManager constructor");
 
                         _instance = new PythonManager();
-
-                        if (!successInitialized)
+                        log.Info($"PythonManager_instance created");
+                        if (!successfulPythonActivation)
                         {
-                            log.Warn($"PythonManager.Instance: did not receive signal - Initialized - after waiting {_timeout} ms");
+                            log.Error($"But CondaEnv activation failed: kill PythonManager instance");
                             _instance = null;
+                            return _instance;
                         }
-                        else log.Debug("PythonManager.Instance: received signal - python is ready.");
+                        log.Info($"successful CondaEnv activation");
                     }
+                    log.Debug($"Released Instance");
                 }
                 return _instance;
             }
@@ -113,16 +138,16 @@ namespace PythonConnect
         private void ManagePythonThread(Object stateInfo)
         {
             #region 1) Initialize Python Thread
-
+            log.Debug("Launch Command Prompt here: "+ _pythonProjectDirectory);
             var startInfo = new ProcessStartInfo
             {
-                FileName = "cmd.exe",
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                WorkingDirectory = _pythonProjectDirectory
+                FileName = "cmd.exe",               // Use Command Prompt
+                UseShellExecute = false,           // Required for redirection
+                RedirectStandardInput = true,      // Allow sending commands
+                RedirectStandardOutput = true,     // Capture stdout
+                RedirectStandardError = true,      // Capture stderr
+                CreateNoWindow = true,             // Do not show a new window
+                WorkingDirectory = _pythonProjectDirectory // Set the working directory
             };
 
             var process = new Process 
@@ -130,20 +155,20 @@ namespace PythonConnect
                 StartInfo = startInfo
             };
 
-            process.OutputDataReceived += DataReceived;
-            process.ErrorDataReceived += DataReceived;
+            // Attach event handlers for stdout and stderr
+            process.OutputDataReceived += OutputDataReceived; 
+            process.ErrorDataReceived += ErrorDataReceived;   
 
             bool isStarted;
             try
             {
-                isStarted = process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                isStarted = process.Start(); // Start the process
+                process.BeginOutputReadLine(); // Begin reading stdout
+                process.BeginErrorReadLine();  // Begin reading stderr
             }
             catch (Exception e)
             {
-                // Usually it occurs when an executable file is not found or is not executable
-
+                // Handle process start failure
                 Console.WriteLine($"Exception during the start of the process: {e}");
                 isStarted = false;
             }
@@ -151,22 +176,20 @@ namespace PythonConnect
             if (!isStarted)
             {
                 Console.WriteLine("the new process \"Command Prompt\" has failed to start !");
+                successfulPythonActivation = false;
+                _signal_pythonThreadActivation.Set();
                 return;
             }
-            log.Info("ManagePythonThread: a new thread \"Command Prompt\" has been launched");
+            log.Info("Command Prompt process has started successfully.");
 
+            log.Info("Command Prompt tries to activate a Python environment using Anaconda.");
+            log.Info("environment Name is: "+ _condaEnvironmentName);
 
+            var activateCondaCmd = $"activateCondaEnv.bat \"{_condaPath}\" \"{_condaEnvironmentName}\" {feedback_success_pythonActivation} {feedback_fail_condaBaseEnv} {feedback_fail_condaOtherEnv}";
 
-            var console = process.StandardInput; 
-            if (!console.BaseStream.CanWrite)
-            {
-                Console.WriteLine("Cannot write in the CSharp console !");
-                return;
-            }
-             
-            log.Info("ManagePythonThread: turn the \"Command Prompt\" into a python environment using Anaconda");
-            var activateCondaCmd = ($"activateCondaEnv.bat \"{_condaPath}\" {AnacondaActivatedFeedback}");
-            console.WriteLine(activateCondaCmd);
+            log.Debug("Command Prompt launches batch script: activateCondaEnv.bat");
+            process.StandardInput.WriteLine(activateCondaCmd);
+
 
             #endregion
 
@@ -174,55 +197,95 @@ namespace PythonConnect
 
             while (!_stop)
             {
-                log.Debug("ManagePythonThread: wait for signal \"New Command\"");
+                log.Debug("Command Prompt waits for signal - New Command -");
                 var index = WaitHandle.WaitAny(new WaitHandle[] { _signal_newCommand, _signal_stopPythonThread });
-                log.Debug("ManagePythonThread: received a signal");
-
+                log.Debug("Command Prompt received a signal");
 
                 if (index == 1)
                 {
-                    log.Warn("Signal wants to kill the python Thread");
-                    _signal_stopPythonThread?.Dispose();
+                    log.Warn("Signal = Stop Python Thread");
+                    _signal_stopPythonThread?.Dispose(); 
                     break;
                 }
-                log.Debug("Signal is a New Command");
+                log.Debug("Signal = New Command");
 
                 lock (_commands)
                 {
-                    log.Debug("ManagePythonThread: is LOCKED");
-                    log.Debug("ManagePythonThread: There is " + _commands.Count + " commands to execute.");
+                    log.Debug("LOCKED list of commands contains "+ _commands.Count + " commands to execute.");
+
                     if (!_commands.Any())
                     {
+                        log.Debug("No more commands to execute.");
                         continue;
                     }
 
                     // Send the commands to python
                     foreach (var command in _commands)
                     {
-                        command.WriteDataFile(); // Write the data to a file.txt to be read by the python script
+                        log.Info("A data file.txt is written with data for the python script");
+                        command.WriteDataFile(); 
                         var commandString = command.Datas.Any()
-                            ? $"python {command.PythonScriptName} \"{command.Id}\" \"{command.PathTo_DataFile}\" \"{command.PathTo_ResultFile}\""
+                            ? $"python {command.PythonScriptName} \"{command.Id}\" \"{command.DataPath}\" \"{command.ResultPath}\""
                             : $"python {command.PythonScriptName} \"{command.Id}\"";
-                        
-                        log.Debug("ManagePythonThread: execute a python command. write in the console: "+commandString);
-                        console.WriteLine(commandString);
 
-                        log.Debug("ManagePythonThread: wait for signal \"Executed Command\"");
+                        log.Info("Launch the python script");
+                        log.Debug("Command Prompt writes: "+commandString);
+                        process.StandardInput.WriteLine(commandString);
+
+                        log.Debug("Wait for signal - Executed Command -");
                         _signal_executedCommand_fromPythonThread.WaitOne();
-                        log.Info("ManagePythonThread: received signal \"Executed Command\": a command was executed by python, and a result was retrieved.");
-                        
+                        log.Debug("Received signal - Executed Command -");
+                        log.Info("Python script completed");
+
                         _signal_executedCommand_fromPythonThread.Reset();
                     }
                     _commands.Clear();
                     _signal_newCommand.Reset();
 
-                    log.Info("ManagePythonThread: send signal \"Return the Results\"");
-                    _signal_returnTheResults.Set();
+                    log.Debug("Send signal - Results are ready -");
+                    _signal_resultsReady.Set();
                 }
+                log.Debug("RELEASED list of commands");
+
             }
 
             #endregion
             process.Close();
+        }
+
+        private void ErrorDataReceived(object s, DataReceivedEventArgs e)
+        {
+            log.Warn($"Command Prompt reads ERROR : {e.Data}");
+            if (e.Data == null)
+            {
+                _stop = true;
+                return;
+            }
+            else
+            {
+                if (e.Data.Trim().Length == 0) { return; }//empty error message
+                else if (e.Data.Trim() == feedback_fail_condaBaseEnv)
+                {
+                    log.Error("Python activation failed: C:\\Path\\To\\Anaconda3\\Scripts\\activate.bat can not be found");
+                    successfulPythonActivation = false;
+                    log.Debug("Send signal - End of Python Activation -");
+                    _signal_pythonThreadActivation.Set();
+                    Dispose();
+                }
+                else if (e.Data.Trim() == feedback_fail_condaOtherEnv)
+                {
+                    log.Error("Python activation failed: Name of conda environment do not exist -> check Anaconda Navigator application");
+                    successfulPythonActivation = false;
+                    log.Debug("Send signal - End of Python Activation -");
+                    _signal_pythonThreadActivation.Set();
+                    Dispose();
+                }
+                else
+                {
+                    addErrorMessage(e.Data);
+                }
+
+            }
         }
 
         /// <summary>
@@ -230,52 +293,49 @@ namespace PythonConnect
         /// </summary>
         /// <param name="s">The source of the event.</param>
         /// <param name="e">The data received event arguments.</param>
-        private void DataReceived(object s, DataReceivedEventArgs e)
+        private void OutputDataReceived(object s, DataReceivedEventArgs e)
         {
-            log.Debug("DataReceived: the following data was read in the console:" + e.Data);
+            log.Debug("Command Prompt reads: " + e.Data);
             if (e.Data == null)
             {
                 _stop = true;
+                return;
             }
             else
             {
-                if (e.Data == AnacondaActivatedFeedback)
+                // Trim whitespace from e.Data before comparison
+                if (e.Data.Trim() == feedback_success_pythonActivation)
                 {
-                    log.Debug("DataReceived: send signal \"the Python Thread has been correctly initialized !\"");
-                    _signal_initializedPythonThread.Set();
+                    log.Debug("Successful Python activation!");
+                    successfulPythonActivation = true;
+                    log.Debug("Send signal - End of Python Activation -");
+                    _signal_pythonThreadActivation.Set();
                 }
 
                 // If the message received in the console is a result from a python script
-                // the message is in the form of "id:pathTo_ResultFile"
+                // the message is in the form of "id:resultPath"
                 var i = e.Data.IndexOf(':');
 
-                if (i == -1)
+                if (i != -1 && Guid.TryParse(e.Data.Substring(0, i), out var id))
                 {
-                    log.Debug("DataReceived: This data is useless");
-                    return;
+                    log.Debug("A GUID was identified.");
+                    string resultPath = e.Data.Substring(i + 1);
+                    log.Debug("Retrieved result file path: " + resultPath);
+
+                    var pythonResult = ReadResultFile(resultPath, id);
+                    log.Info("Result file read and stored.");
+
+                    lock (_results)
+                    {
+                        log.Debug("LOCK list of results");
+                        _results.Add(pythonResult);
+                        log.Info("Result added to the list.");
+                    }
+                    log.Debug("RELEASED list of results");
+
+                    log.Debug("Send Signal - Executed Command -");
+                    _signal_executedCommand_fromPythonThread.Set();
                 }
-
-                if (!Guid.TryParse(e.Data.Substring(0, i), out var id))
-                {
-                    log.Debug("DataReceived: This data is also useless");
-                    return;
-                }
-
-                log.Debug("DataReceived: a GuID was retrieved");
-
-                string pathTo_ResultFile = e.Data.Substring(i + 1, e.Data.Length - i - 1);
-                log.Debug("DataReceived: the following path to a result file was retrieved: " + pathTo_ResultFile);
-
-                var pythonResult = ReadResultFile(pathTo_ResultFile, id);
-                log.Info("DataReceived: the ResultFile was read and stored in a pythonResult Object.");
-
-                lock (_results)
-                {
-                    _results.Add(pythonResult);
-                    log.Debug("DataReceived: a pythonResult was added to the list of results");
-                }
-                log.Info("DataReceived: send signal \"Executed Command\": a command was executed by python, and a result was retrieved.");
-                _signal_executedCommand_fromPythonThread.Set();
             }
         }
 
@@ -301,22 +361,32 @@ namespace PythonConnect
             else return null;
         }
 
+        private static void addErrorMessage(string errorMessage)
+        {
+            lock (_errorMessages)
+            {
+                _errorMessages.Add(errorMessage);
+            }
+        }
+
         #endregion
 
         #region Public Methods
 
-
         /// <summary>
-        /// Sets up the PythonManager with the specified timeout, path to activate Conda, and Python project directory.
+        /// Sets up the PythonManager with the specified timeout, path to activate Conda, Python project directory, and environment name.
         /// </summary>
         /// <param name="timeout">The timeout duration in milliseconds.</param>
         /// <param name="condaPath">The path to the activate.bat file in the Anaconda environment.</param>
         /// <param name="pythonProjectDirectory">The path to the Python project directory.</param>
-        public static void Setup(int timeout, string condaPath, string pythonProjectDirectory)
+        /// <param name="condaEnvironmentName">The name of the Anaconda environment to activate. Default is "base".</param>
+        public static void Setup(string pythonProjectDirectory, string condaPath, string condaEnvironmentName = "base", int timeout=10000)
         {
             _timeout = timeout;
             _condaPath = condaPath;
             _pythonProjectDirectory = pythonProjectDirectory;
+            _condaEnvironmentName = condaEnvironmentName;
+            log.Info("PythonManager setup completed.");
         }
 
         /// <summary>
@@ -333,52 +403,53 @@ namespace PythonConnect
 
             lock (_commands)
             {
-                log.Debug("ExecuteCommand: LOCKED - Add a new command.");
-                _commands.Add(command); // Add the new command to the list of commands to execute
+                log.Debug("LOCKED list of commands");
+                log.Info("Add a new command");
+                _commands.Add(command); 
             }
-            log.Debug("ExecuteCommand: RELEASED");
-            log.Debug("ExecuteCommand: send signal \"New Command\"");
+            log.Debug("RELEASED list of commands");
+            log.Debug("Send signal - New Command -");
             _signal_newCommand.Set();
 
-            //continue reading the code in method "NewPythonThread", region 2) Write New Commands, from the begining of the while(!stop) loop. 
+            //Ctrl + F and look for _signal_newCommand; to understand the flow of the program
             //...
-            //come back here once _signal_returnTheResults has been Set at the end of the while(!stop) loop 
+            //come back here once _signal_resultsReady has been send
 
-            log.Debug("ExecuteCommand: wait for signal - Return the results");
-            bool success = _signal_returnTheResults.WaitOne(_timeout);
+            log.Debug("Wait for signal - Results are ready -");
+            bool success = _signal_resultsReady.WaitOne(_timeout);
+
             if (!success)
             {
-                log.Warn($"Main PythonManager: did not receive signal - Executed Command - after waiting {_timeout} ms");
+                log.Warn($"Did not receive signal - Results are ready - after waiting {_timeout} ms");
                 return "Python failed to answer";
             }
+            log.Debug("Received signal - Results are ready -");
 
-            log.Debug("ExecuteCommand: received signal \"Return the results\" because that the python command has been executed");
 
             string result = null;
             lock (_results)
             {
-                log.Debug("ExecuteCommand: LOCKED");
-                log.Info("ExecuteCommand: retrieve the result with the correct Id in the list of results, and return it.");
+                log.Debug("LOCKED list of results contains " + _results.Count + " results to return.");
+                log.Info("Try to retrieve the correct result in the list of results.");
 
-                var pythonResult = _results.FirstOrDefault(o => o.Id == command.Id); // In the list of results received from python, find the result that has the same Id than the command 
+                var pythonResult = _results.FirstOrDefault(o => o.Id == command.Id);
                 if (pythonResult != null)
                 {
+                    log.Info("Retrieved the correct result.");
                     result = pythonResult.Result;
-                    log.Info("ExecuteCommand: the result has well been retrieved.");
-                    _results.RemoveAll(o => o.Id == command.Id); //delete the processed result from the list of results
-                    log.Debug("ExecuteCommand: a pythonResult was deleted from the list of results.");
+                    _results.RemoveAll(o => o.Id == command.Id); 
+                    log.Debug("Delete the correct result from the list");
                 }
                 else
                 {
-                    log.Warn("ExecuteCommand: DID NOT FIND THE RESULT");
+                    log.Warn("DID NOT FIND THE RESULT");
                 }
             }
-            log.Debug("ExecuteCommand: RELEASED");
-            _signal_returnTheResults.Reset();
-            log.Debug("ExecuteCommand: Resetted signal \"Return the results\"");
-            log.Info("ExecuteCommand: the result from python has been returned.");
+            log.Debug("RELEASED list of results");
+            _signal_resultsReady.Reset();
 
-            return result; // a string that contains the result of the command
+            log.Info("Return the result from python to main CS Program");
+            return result; // as a string 
         }
 
 
@@ -389,16 +460,27 @@ namespace PythonConnect
         {
             _stop = true;
             _signal_stopPythonThread.Set();
-
-            _signal_initializedPythonThread?.Dispose();
+            _signal_pythonThreadActivation?.Dispose();
             _signal_newCommand?.Dispose();
             _signal_executedCommand_fromPythonThread?.Dispose();
-            _signal_returnTheResults?.Dispose();
+            _signal_resultsReady?.Dispose();
 
             _instance = null;
-            log.Fatal("The Python Thread has been stopped");
+            log.Fatal("The Python Thread has stopped");
         }
 
+
+        public static List<string> GetErrorMessages()
+        {
+            List<string> _errors = new List<string>();
+
+            lock (_errorMessages)
+            {
+                _errors.AddRange(_errorMessages);
+                _errorMessages.Clear();
+            }
+            return _errors;
+        }
         #endregion
 
 

@@ -12,7 +12,10 @@ namespace PythonConnect.TestProject
 {
     internal class Program
     {
-        
+
+        static string input1 = "";
+        static string input2 = "";
+
         private static void Main()
         {
             #region Paths Setup
@@ -64,10 +67,11 @@ namespace PythonConnect.TestProject
             log.Debug(condaPath);
             log.Debug(pythonProjectDirectory);
 
+            string condaEnvironmentName = "base"; // The name of the conda environment to activate. Default is "base". Or specify other environment name you might have created (refer to your anaconda navigator application)
             int timeout = 10000;//10 seconds. This is the time the python script will be allowed to run before it is killed.
             // do not set the timeout lower than 5 seconds because it takes time to initialize the python thread. 
 
-            PythonManager.Setup(timeout,condaPath,pythonProjectDirectory);
+            PythonManager.Setup(pythonProjectDirectory, condaPath, condaEnvironmentName, timeout);
             #endregion
 
 
@@ -75,25 +79,34 @@ namespace PythonConnect.TestProject
             //Example of how to use the PythonManager
             var stopWatch = new Stopwatch();
             stopWatch.Start();
+
             using (var pythonManager = PythonManager.Instance)
             {
+                if (pythonManager == null)
+                {
+                    Console.WriteLine("[Main][ERROR]: PythonManager failed to initialize due to following errors: ");
+                    foreach (string errorMessage in PythonManager.GetErrorMessages())
+                    {
+                        Console.WriteLine(errorMessage);
+                    }
+                    return;
+                }
                 stopWatch.Stop();
                 Console.WriteLine($"A new python thread has been initialized in: {stopWatch.Elapsed}");
                 Console.WriteLine($"\nOne advantage of using PythonConnect is: the python Thread is initialized only once!");
                 Console.WriteLine($"Initializing a python Thread is very time consuming! it took: {stopWatch.Elapsed}");
 
                 Console.WriteLine($"\nMultiple python commands can then be executed without reinitializing python everytime, which saves a lot of time!");
-                Console.WriteLine($"In the following example, " + pythonScript +" takes two strings as input and returns string1.lower() and string2.upper().\n");
+                Console.WriteLine($"In the following example, " + pythonScript + " takes two strings as input and returns string1.lower() and string2.upper().\n");
                 Console.WriteLine("Execute python test_script with: ");
 
-                string input1 = "HELLO";
-                string input2 = "WORLD";
-
+                input1 = "HELLO";
+                input2 = "WORLD";
                 stopWatch.Restart();
                 var result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1, input2);
                 stopWatch.Stop();
-                Console.WriteLine("inputs: "+ input1 + " " + input2);
-                Console.WriteLine("return: "+ result + " in: " + stopWatch.Elapsed + "\n");
+                Print(result, stopWatch.Elapsed.ToString());
+
 
 
                 input1 = "MY NAME IS";
@@ -101,8 +114,8 @@ namespace PythonConnect.TestProject
                 stopWatch.Restart();
                 result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1, input2);
                 stopWatch.Stop();
-                Console.WriteLine("inputs: " + input1 + " " + input2);
-                Console.WriteLine("return: " + result + " in: " + stopWatch.Elapsed + "\n");
+                Print(result, stopWatch.Elapsed.ToString());
+
 
 
                 input1 = "JAMES";
@@ -110,8 +123,8 @@ namespace PythonConnect.TestProject
                 stopWatch.Restart();
                 result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1, input2);
                 stopWatch.Stop();
-                Console.WriteLine("inputs: " + input1 + " " + input2);
-                Console.WriteLine("return: " + result + " in: " + stopWatch.Elapsed + "\n");
+                Print(result, stopWatch.Elapsed.ToString());
+
 
 
                 Console.WriteLine($"\nGo to:");
@@ -119,7 +132,26 @@ namespace PythonConnect.TestProject
                 Console.WriteLine(resultPath);
                 Console.WriteLine($"to see how C# and python communicated through read/write text files");
             }
+
             Console.ReadKey();
+        }
+
+        private static void Print(string result, string time)
+        {
+            if (PythonManager.GetErrorMessages().Count > 0)
+            {
+                Console.WriteLine("[Main][ERROR]: PythonManager failed to execute command due to following errors: ");
+                foreach (string errorMessage in PythonManager.GetErrorMessages())
+                {
+                    Console.WriteLine(errorMessage);
+                }
+                return;
+            }
+            else
+            {
+                Console.WriteLine("inputs: " + input1 + " " + input2);
+                Console.WriteLine("return: " + result + " in: " + time + "\n");
+            }
         }
     }
 }

@@ -13,8 +13,8 @@ namespace PythonConnect
     {
         public Guid Id { get; }
         public string PythonScriptName { get; } 
-        public string PathTo_DataFile { get; } 
-        public string PathTo_ResultFile { get; } 
+        public string DataPath { get; } 
+        public string ResultPath { get; } 
         public List<string> Datas { get; } 
 
         /// <summary>
@@ -28,8 +28,8 @@ namespace PythonConnect
         {
             Id = Guid.NewGuid();
             PythonScriptName = pythonScriptName;
-            PathTo_DataFile = pathTo_DataFile;
-            PathTo_ResultFile = pathTo_ResultFile;
+            DataPath = pathTo_DataFile;
+            ResultPath = pathTo_ResultFile;
             Datas = datas.Select(o => $"{o}").ToList();
         }
 
@@ -39,19 +39,19 @@ namespace PythonConnect
         public void WriteDataFile()
         {
             // Ensure the directory exists
-            string directory = Path.GetDirectoryName(PathTo_DataFile);
+            string directory = Path.GetDirectoryName(DataPath);
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
             // Ensure the file exists
-            if (!File.Exists(PathTo_DataFile))
+            if (!File.Exists(DataPath))
             {
-                File.Create(PathTo_DataFile).Dispose();
+                File.Create(DataPath).Dispose();
             }
 
-            using (StreamWriter outputFile = new StreamWriter(PathTo_DataFile, false))
+            using (StreamWriter outputFile = new StreamWriter(DataPath, false))
             {
                 outputFile.WriteLine(Id);
                 foreach (string data in Datas)
