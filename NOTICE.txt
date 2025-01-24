@@ -1,0 +1,56 @@
+﻿PythonConnect Licensing
+============================================
+
+This file attempts to include all licenses that apply within PythonConnect (this program) source tree, in particular any that are supposed to be exposed to the end user for credit requirements for instance. 
+
+PythonConnect provides access to the full power of Python 3 (latest version) directly within any C# application. 
+With Anaconda3 preinstalled to set up the Python environment, PythonConnect seamlessly manages communication between Python and C#, running in parallel asynchronous threads. 
+This facilitates the effortless execution of Python scripts, smooth data exchange, and seamless integration of Python libraries (e.g., NumPy) into C# workflows.
+
+Copyright (C) <2021-2025> <ITAO, Université catholique de Louvain (UCLouvain)>
+
+The development of PythonConnect has been done by Renan LECHIEN (ITAO, Belgium), and Jonas FERON (Université catholique de Louvain, UCLouvain, Belgium), hereafter the AUTHORS.
+
+Website of Jonas FERON: https://github.com/JonasFeron/PythonConnect	https://www.nuget.org/packages/PythonConnect
+Contact: jonas.feron@gmail.com	
+
+PythonConnect General
+-----------------------------------------
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*************************************************************************
+
+[The documentation for this program is under a creative commons attribution share-alike
+4.0 license.  http://creativecommons.org/licenses/by-sa/4.0/
+It can be found here:  https://github.com/JonasFeron/PythonConnect]
+*************************************************************************
+
+This program has dependencies on other libraries and Website dependencies that are commonly distributed with this program core libraries.
+
+Dependencies are as follows:
+
+log4net					Apache License-2.0			https://github.com/apache/logging-log4net		
+
+
+Licences & Credits of dependencies
+----------------------------------
+
+#####
+log4net
+#####
+Apache log4net
+Copyright 2004-2024 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (https://www.apache.org/).
+-----------------------------------------------------------------------------

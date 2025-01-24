@@ -1,5 +1,22 @@
-﻿import sys
-# from python_connect import mainhelper  #if "import" does not work, then use the following lines of code, or install python_connect in the anaconda environment using "pip install python_connect".
+﻿# Copyright <2021-2025> <ITAO, Université catholique de Louvain (UCLouvain)>
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# List of the contributors to the development of PythonConnect: see NOTICE file.
+# Description and complete License: see NOTICE file.
+
+import sys
+# from python_connect import mainhelper  #if "import" does not work, then use the following lines of code, or copy/paste python_connect folder in the same directory as test_script.py.
 
 # In test_script.py, import mainhelper from the python_connect package given the following directory structure:
 #PythonConnect\
@@ -15,7 +32,7 @@ import os
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../src'))
 sys.path.append(base_dir)
 
-# if python_connect is installed in the anaconda environment, then comment out the three above statements.
+# if python_connect is installed in the same directory as test_script.py, then comment out the three above statements.
 from python_connect import mainhelper 
 
 
