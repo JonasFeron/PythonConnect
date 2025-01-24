@@ -15,18 +15,12 @@
 //List of the contributors to the development of PythonConnect: see NOTICE file.
 //Description and complete License: see NOTICE file.
 
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using log4net;
 using log4net.Repository.Hierarchy;
 using log4net.Core;
 using log4net.Appender;
 using log4net.Layout;
 using System.IO;
-using System.Net.NetworkInformation;
-using System.Threading;
 
 namespace PythonConnect
 {

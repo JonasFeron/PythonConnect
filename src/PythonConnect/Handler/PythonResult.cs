@@ -16,10 +16,6 @@
 //Description and complete License: see NOTICE file.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PythonConnect
 {
