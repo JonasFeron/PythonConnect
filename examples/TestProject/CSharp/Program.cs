@@ -24,17 +24,17 @@ using System.Diagnostics;
 using System.IO;
 using PythonConnect;
 using log4net.Core;
+using System.Threading;
 
 namespace PythonConnect.TestProject
 {
     internal class Program
     {
 
-        static string input1 = "";
-        static string input2 = "";
 
         private static void Main()
         {
+            #region Setup
             #region Paths Setup
             //1) ProjectDirectory: The directory of the project. This is the root directory that contains the Python and C# directories.
             //Console.WriteLine("the executable of this program is located here: " + new DirectoryInfo(Directory.GetCurrentDirectory()).FullName);
@@ -63,7 +63,7 @@ namespace PythonConnect.TestProject
 
             #region Log Setup
             // Set up the logger with a desired level
-            string loglevel = Level.Debug.DisplayName; // Set the desired log level. Options are: Debug, Info, Warn, Error, Fatal, Off
+            string loglevel = Level.Info.DisplayName; // Set the desired log level. Options are: Debug, Info, Warn, Error, Fatal, Off
             LogHelper.Setup(loglevel, tempDirectory);
 
             // Get a logger instance to write log messages
@@ -90,70 +90,119 @@ namespace PythonConnect.TestProject
 
             PythonManager.Setup(pythonProjectDirectory, condaPath, condaEnvironmentName, timeout);
             #endregion
-
+            #endregion
 
             //Main Program
-            //Example of how to use the PythonManager
+            //Example of how to use the PythonManager in multi-threaded program
+            #region Main
+            #region Python Initialization
             var stopWatch = new Stopwatch();
             stopWatch.Start();
+            var pythonManager = PythonManager.Instance;
 
-            using (var pythonManager = PythonManager.Instance)
+            //Alternative way to use PythonManager
+            //using (var pythonManager = PythonManager.Instance)
+            //{
+            //    var result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1, input2);
+            //} //Dispose() is called automatically
+            //this method is useful if you want to use the PythonManager in a limited scope, such as in a single threaded program.
+
+            if (pythonManager == null)
             {
-                if (pythonManager == null)
+                Console.WriteLine("[Main][ERROR]: PythonManager failed to initialize due to following errors: ");
+                foreach (string errorMessage in PythonManager.GetErrorMessages())
                 {
-                    Console.WriteLine("[Main][ERROR]: PythonManager failed to initialize due to following errors: ");
-                    foreach (string errorMessage in PythonManager.GetErrorMessages())
-                    {
-                        Console.WriteLine(errorMessage);
-                    }
-                    return;
+                    Console.WriteLine(errorMessage);
                 }
-                stopWatch.Stop();
-                Console.WriteLine($"A new python thread has been initialized in: {stopWatch.Elapsed}");
-                Console.WriteLine($"\nOne advantage of using PythonConnect is: the python Thread is initialized only once!");
-                Console.WriteLine($"Initializing a python Thread is very time consuming! it took: {stopWatch.Elapsed}");
-
-                Console.WriteLine($"\nMultiple python commands can then be executed without reinitializing python everytime, which saves a lot of time!");
-                Console.WriteLine($"In the following example, " + pythonScript + " takes two strings as input and returns string1.lower() and string2.upper().\n");
-                Console.WriteLine("Execute python test_script with: ");
-
-                input1 = "HELLO";
-                input2 = "WORLD";
-                stopWatch.Restart();
-                var result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1, input2);
-                stopWatch.Stop();
-                Print(result, stopWatch.Elapsed.ToString());
-
-
-
-                input1 = "MY NAME IS";
-                input2 = "BOND";
-                stopWatch.Restart();
-                result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1, input2);
-                stopWatch.Stop();
-                Print(result, stopWatch.Elapsed.ToString());
-
-
-
-                input1 = "JAMES";
-                input2 = "BOND";
-                stopWatch.Restart();
-                result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1, input2);
-                stopWatch.Stop();
-                Print(result, stopWatch.Elapsed.ToString());
-
-
-
-                Console.WriteLine($"\nGo to:");
-                Console.WriteLine(dataPath);
-                Console.WriteLine(resultPath);
-                Console.WriteLine($"to see how C# and python communicated through read/write text files");
+                return;
             }
+            stopWatch.Stop();
+            double InitializationTime = stopWatch.Elapsed.TotalSeconds;
+            
+            Console.WriteLine($"A python thread has been initialized in: {Math.Round(InitializationTime, 2)}s");
+            Console.WriteLine($"Initializing a python Thread is very time consuming!");
 
+            Console.WriteLine($"\n\nPress any key to continue and execute a simple python command...");
             Console.ReadKey();
+            #endregion
+
+            #region Single threaded C# app
+            Console.WriteLine($"\nPython {pythonScript} takes two strings as input and returns string1.lower() + string2.upper():");
+
+            string input1 = "HELLO";
+            string input2 = "world";
+
+            stopWatch.Restart();
+            var result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1, input2);
+            stopWatch.Stop();
+            Print(input1, input2, result, Math.Round(stopWatch.Elapsed.TotalSeconds, 2));
+            Console.WriteLine($"This was fast ! ...because python was already initialized and was waiting for the order from C#.");
+
+
+            Console.WriteLine($"\n\nPress any key to continue and run 3 C# threads in parallel...\n");
+            Console.ReadKey();
+            #endregion
+
+            #region Multi-threaded C# app
+
+            Thread t1 = new Thread(() =>
+            {
+                Console.WriteLine($"C# thread 1 says: python, execute {pythonScript}");
+                string input1_t1 = "MY NAME IS";
+                string input2_t1 = "bond";
+                var stopWatch_t1 = new Stopwatch();
+                stopWatch_t1.Start();
+                result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1_t1, input2_t1);
+                stopWatch_t1.Stop();
+                Console.WriteLine($"\npython replies to C# thread 1: ");
+                Print(input1_t1, input2_t1, result, Math.Round(stopWatch_t1.Elapsed.TotalSeconds, 2));
+            });
+
+
+            Thread t2 = new Thread(() =>
+            {
+                Console.WriteLine($"C# thread 2 says: python, execute {pythonScript}");
+                string input1_t2 = "JAMES";
+                string input2_t2 = "bond";
+                var stopWatch_t2 = new Stopwatch();
+                stopWatch_t2.Start();
+                result = pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, input1_t2, input2_t2);
+                stopWatch_t2.Stop();
+                Console.WriteLine($"\npython replies to C# thread 2: ");
+                Print(input1_t2, input2_t2, result, Math.Round(stopWatch_t2.Elapsed.TotalSeconds, 2));
+            });
+
+            Thread t3 = new Thread(() =>
+            {
+                Console.WriteLine($"C# thread 3 says: I am working on something else.");
+                Thread.Sleep(100); //wait 0.1s
+                Console.WriteLine($"\nC# thread 3 says: I am done, because I kept on working in parallel.");                
+            });
+
+            stopWatch.Restart();
+            t1.Start();
+            t2.Start();
+            t3.Start();
+            //wait for threads 1, 2 and 3 to finish
+            t1.Join();
+            t2.Join();
+            t3.Join();
+            stopWatch.Stop();
+            Console.WriteLine("\nTotal execution time for threads 1, 2 and 3 = "+ Math.Round(stopWatch.Elapsed.TotalSeconds, 2));
+
+            Console.WriteLine($"This was very very fast ! ...because only one python thread was initialized and managed multiple C# orders !");
+            Console.WriteLine($"Initializing two python threads would have taken {Math.Round(2*InitializationTime,2)}s");
+            #endregion
+
+            pythonManager.Dispose();
+            
+            Console.WriteLine($"\n\nEnd of Demo: Press any key to exit...");
+            Console.ReadKey();
+            #endregion
+
         }
 
-        private static void Print(string result, string time)
+        private static void Print(string input1, string input2, string result, double time)
         {
             if (PythonManager.GetErrorMessages().Count > 0)
             {
@@ -167,7 +216,7 @@ namespace PythonConnect.TestProject
             else
             {
                 Console.WriteLine("inputs: " + input1 + " " + input2);
-                Console.WriteLine("return: " + result + " in: " + time + "\n");
+                Console.WriteLine("return: " + result + " in: " + time + "s");
             }
         }
     }
