@@ -230,5 +230,7 @@ desktop.ini
 /examples/TestProject/CSharp/bin
 /examples/TestProject/CSharp/obj
 
+/docs/.private
+
 
 
