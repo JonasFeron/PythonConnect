@@ -195,6 +195,7 @@ Release/
 # Package Management
 /packages/NuGet/.private
 *.nuspec
+nuget.exe
 project.lock.json
 project.fragment.lock.json
 artifacts/

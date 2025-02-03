@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
 [assembly: AssemblyTitle("PythonConnect")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("PythonConnect provides easy access to the full power of Python 3 (latest version) directly within any C# application.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ITAO, Université catholique de Louvain (UCLouvain)")]
 [assembly: AssemblyProduct("PythonConnect")]
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      Numéro de build
 //      Révision
 //
-[assembly: AssemblyVersion("1.0.1")]
-[assembly: AssemblyFileVersion("1.0.1")]
+[assembly: AssemblyVersion("1.1.0")]
+[assembly: AssemblyFileVersion("1.1.0")]
