@@ -3,7 +3,7 @@
 
 This file attempts to include all licenses that apply within PythonConnect (this program) source tree, in particular any that are supposed to be exposed to the end user for credit requirements for instance. 
 
-PythonConnect provides access to the full power of Python 3 (latest version) directly within any C# application. 
+PythonConnect provides easy access to the full power of Python 3 (latest version) directly within any C# application. 
 With Anaconda3 preinstalled to set up the Python environment, PythonConnect seamlessly manages communication between Python and C#, running in parallel asynchronous threads. 
 This facilitates the effortless execution of Python scripts, smooth data exchange, and seamless integration of Python libraries (e.g., NumPy) into C# workflows.
 
@@ -32,7 +32,7 @@ limitations under the License.
 
 [The documentation for this program is under a creative commons attribution share-alike
 4.0 license.  http://creativecommons.org/licenses/by-sa/4.0/
-It can be found here:  https://github.com/JonasFeron/PythonConnect]
+It can be found here:  https://github.com/JonasFeron/PythonConnect/docs]
 *************************************************************************
 
 This program has dependencies on other libraries and Website dependencies that are commonly distributed with this program core libraries.
