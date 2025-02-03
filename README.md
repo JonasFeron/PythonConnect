@@ -48,4 +48,5 @@ PythonConnect is **ideal for**:
 PythonConnect is open-source and available under the **Apache 2.0 License**.
 
 📌 **GitHub Repository**: [PythonConnect on GitHub](https://github.com/JonasFeron/PythonConnect)
+📌 **More Details**: see documentation under docs\documentation.pdf
 
